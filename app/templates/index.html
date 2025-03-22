@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block title %}Tableau de Bord{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <h1 class="mb-4"><i class="fas fa-chart-line me-2"></i>Tableau de Bord</h1>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card text-white bg-primary">
+            <div class="card-body">
+                <h5 class="card-title"><i class="fas fa-list me-2"></i>Total des Sondages</h5>
+                <h2 class="display-4">{{ total_surveys }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-white bg-success">
+            <div class="card-body">
+                <h5 class="card-title"><i class="fas fa-check-circle me-2"></i>Réussis</h5>
+                <h2 class="display-4">{{ successful_surveys }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-white bg-danger">
+            <div class="card-body">
+                <h5 class="card-title"><i class="fas fa-times-circle me-2"></i>Échoués</h5>
+                <h2 class="display-4">{{ failed_surveys }}</h2>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-history me-2"></i>Activité Récente</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Restaurant</th>
+                                <th>Groupe d'Âge</th>
+                                <th>Statut</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for log in recent_logs %}
+                            <tr class="{% if log.status == 'success' %}table-success{% else %}table-danger{% endif %}">
+                                <td>{{ log.submission_date.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                                <td>{{ log.restaurant_number }}</td>
+                                <td>{{ log.age_group }}</td>
+                                <td>
+                                    {% if log.status == 'success' %}
+                                    <span class="badge bg-success">Réussi</span>
+                                    {% else %}
+                                    <span class="badge bg-danger" title="{{ log.error_message }}">Échoué</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="4" class="text-center">Aucun journal trouvé</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="card-footer text-end">
+                <a href="{{ url_for('main.logs') }}" class="btn btn-sm btn-primary">Voir Tous les Journaux</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

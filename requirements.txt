@@ -1,0 +1,6 @@
+flask==2.0.1
+selenium==4.1.0
+webdriver-manager==3.5.2
+flask-wtf==1.0.0
+flask-sqlalchemy==2.5.1
+python-dotenv==0.19.2 

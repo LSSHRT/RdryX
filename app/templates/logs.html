@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+
+{% block title %}Journaux{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <h1 class="mb-4"><i class="fas fa-history me-2"></i>Journaux des Sondages</h1>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Date</th>
+                                <th>Restaurant</th>
+                                <th>Groupe d'Âge</th>
+                                <th>Date du Ticket</th>
+                                <th>Heure du Ticket</th>
+                                <th>Statut</th>
+                                <th>Erreur</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for log in logs.items %}
+                            <tr class="{% if log.status == 'success' %}table-success{% else %}table-danger{% endif %}">
+                                <td>{{ log.id }}</td>
+                                <td>{{ log.submission_date.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                                <td>{{ log.restaurant_number }}</td>
+                                <td>{{ log.age_group }}</td>
+                                <td>{{ log.receipt_date }}</td>
+                                <td>{{ log.receipt_time }}</td>
+                                <td>
+                                    {% if log.status == 'success' %}
+                                    <span class="badge bg-success">Réussi</span>
+                                    {% else %}
+                                    <span class="badge bg-danger">Échoué</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if log.error_message %}
+                                    <button class="btn btn-sm btn-outline-danger" 
+                                            data-bs-toggle="tooltip" 
+                                            data-bs-placement="top"
+                                            title="{{ log.error_message }}">
+                                        Voir l'Erreur
+                                    </button>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="8" class="text-center">Aucun journal trouvé</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="card-footer">
+                <nav aria-label="Navigation des pages">
+                    <ul class="pagination justify-content-center">
+                        {% if logs.has_prev %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('main.logs', page=logs.prev_num) }}">Précédent</a>
+                        </li>
+                        {% else %}
+                        <li class="page-item disabled">
+                            <a class="page-link" href="#">Précédent</a>
+                        </li>
+                        {% endif %}
+
+                        {% for page_num in logs.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+                            {% if page_num %}
+                                {% if logs.page == page_num %}
+                                <li class="page-item active">
+                                    <a class="page-link" href="{{ url_for('main.logs', page=page_num) }}">{{ page_num }}</a>
+                                </li>
+                                {% else %}
+                                <li class="page-item">
+                                    <a class="page-link" href="{{ url_for('main.logs', page=page_num) }}">{{ page_num }}</a>
+                                </li>
+                                {% endif %}
+                            {% else %}
+                                <li class="page-item disabled">
+                                    <a class="page-link" href="#">...</a>
+                                </li>
+                            {% endif %}
+                        {% endfor %}
+
+                        {% if logs.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('main.logs', page=logs.next_num) }}">Suivant</a>
+                        </li>
+                        {% else %}
+                        <li class="page-item disabled">
+                            <a class="page-link" href="#">Suivant</a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Initialiser les infobulles
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl)
+    })
+</script>
+{% endblock %} 

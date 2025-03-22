@@ -1,0 +1,175 @@
+{% extends "base.html" %}
+
+{% block title %}Contrôle du Bot{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <h1 class="mb-4"><i class="fas fa-robot me-2"></i>Panneau de Contrôle du Bot</h1>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-cog me-2"></i>Exécution d'un Sondage Unique</h5>
+            </div>
+            <div class="card-body">
+                <form action="{{ url_for('bot.run_bot') }}" method="post">
+                    <div class="mb-3">
+                        <label for="age_group" class="form-label">Groupe d'Âge</label>
+                        <select class="form-select" id="age_group" name="age_group">
+                            <option value="">Aléatoire (Par défaut)</option>
+                            <option value="15_to_24">Entre 15 et 24 ans</option>
+                            <option value="25_to_34">Entre 25 et 34 ans</option>
+                            <option value="35_to_49">Entre 35 et 49 ans</option>
+                            <option value="50_plus">50 ans et plus</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="date" class="form-label">Date du Ticket (JJ/MM/AAAA)</label>
+                        <input type="text" class="form-control" id="date" name="date" placeholder="JJ/MM/AAAA">
+                        <div class="form-text">Laisser vide pour la date actuelle</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="time" class="form-label">Heure du Ticket (HH:MM)</label>
+                        <input type="text" class="form-control" id="time" name="time" placeholder="HH:MM">
+                        <div class="form-text">Laisser vide pour une heure aléatoire</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="restaurant_number" class="form-label">Numéro du Restaurant (4 chiffres)</label>
+                        <input type="text" class="form-control" id="restaurant_number" name="restaurant_number" maxlength="4" placeholder="0000">
+                        <div class="form-text">Laisser vide pour un numéro aléatoire</div>
+                    </div>
+                    
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" class="form-check-input" id="headless" name="headless" checked>
+                        <label class="form-check-label" for="headless">Exécuter en mode invisible (sans fenêtre de navigateur)</label>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary" {% if bot_running %}disabled{% endif %}>
+                        <i class="fas fa-play me-2"></i>Lancer le Sondage
+                    </button>
+                    
+                    {% if bot_running %}
+                    <div class="alert alert-warning mt-3">
+                        <i class="fas fa-spinner fa-spin me-2"></i>Le bot est en cours d'exécution. Veuillez patienter...
+                    </div>
+                    {% endif %}
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-layer-group me-2"></i>Exécution en Lot</h5>
+            </div>
+            <div class="card-body">
+                <form action="{{ url_for('bot.run_bulk') }}" method="post">
+                    <div class="mb-3">
+                        <label for="count" class="form-label">Nombre de Sondages à Exécuter</label>
+                        <input type="number" class="form-control" id="count" name="count" min="1" max="50" value="5">
+                        <div class="form-text">Maximum 50 sondages par lot</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="interval" class="form-label">Intervalle Entre les Sondages (minutes)</label>
+                        <input type="number" class="form-control" id="interval" name="interval" min="1" max="60" value="5">
+                        <div class="form-text">Temps d'attente entre chaque sondage (1-60 minutes)</div>
+                    </div>
+                    
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" class="form-check-input" id="bulk_headless" name="headless" checked>
+                        <label class="form-check-label" for="bulk_headless">Exécuter en mode invisible (sans fenêtre de navigateur)</label>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>Le mode lot utilise des valeurs aléatoires pour tous les champs.
+                    </div>
+                    
+                    <button type="submit" class="btn btn-success" {% if bot_running %}disabled{% endif %}>
+                        <i class="fas fa-play-circle me-2"></i>Démarrer l'Exécution en Lot
+                    </button>
+                    
+                    {% if bot_running %}
+                    <div class="alert alert-warning mt-3">
+                        <i class="fas fa-spinner fa-spin me-2"></i>Le bot est en cours d'exécution. Veuillez patienter...
+                    </div>
+                    {% endif %}
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-info-circle me-2"></i>Statut du Bot</h5>
+            </div>
+            <div class="card-body">
+                <div id="bot-status">
+                    {% if bot_running %}
+                    <div class="alert alert-warning">
+                        <i class="fas fa-spinner fa-spin me-2"></i>Le bot est en cours d'exécution...
+                    </div>
+                    {% else %}
+                    <div class="alert alert-success">
+                        <i class="fas fa-check-circle me-2"></i>Le bot est inactif et prêt à être exécuté.
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Vérifier le statut du bot toutes les 5 secondes
+    function checkBotStatus() {
+        fetch("{{ url_for('bot.bot_status') }}")
+            .then(response => response.json())
+            .then(data => {
+                const statusDiv = document.getElementById('bot-status');
+                const runButtons = document.querySelectorAll('button[type="submit"]');
+                
+                if (data.running) {
+                    statusDiv.innerHTML = `
+                        <div class="alert alert-warning">
+                            <i class="fas fa-spinner fa-spin me-2"></i>Le bot est en cours d'exécution...
+                        </div>
+                    `;
+                    
+                    // Désactiver les boutons d'exécution
+                    runButtons.forEach(button => {
+                        button.disabled = true;
+                    });
+                } else {
+                    statusDiv.innerHTML = `
+                        <div class="alert alert-success">
+                            <i class="fas fa-check-circle me-2"></i>Le bot est inactif et prêt à être exécuté.
+                        </div>
+                    `;
+                    
+                    // Activer les boutons d'exécution
+                    runButtons.forEach(button => {
+                        button.disabled = false;
+                    });
+                }
+            });
+    }
+    
+    // Vérifier initialement puis toutes les 5 secondes
+    checkBotStatus();
+    setInterval(checkBotStatus, 5000);
+</script>
+{% endblock %} 
